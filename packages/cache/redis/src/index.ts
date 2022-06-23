@@ -68,6 +68,10 @@ export default class RedisCache<V = string> implements KeyValueCache<V> {
     return undefined;
   }
 
+  async getKeysByPrefix(prefix: string): Promise<string[]> {
+    return this.client.keys(`${prefix}*`);
+  }
+
   async delete(key: string): Promise<boolean> {
     try {
       await this.client.del(key);

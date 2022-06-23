@@ -28,25 +28,34 @@ export default function useMeshResponseCache(options: MeshPluginOptions<YamlConf
       async set(responseId, data, entities, ttl) {
         await Promise.all(
           [...entities].map(async ({ typename, id }) => {
-            const key = `${typename}.${id}`;
-            const existingResponseIdSet = (await options.cache.get(`response-cache:${key}`)) || [];
-            if (!existingResponseIdSet.includes(responseId)) {
-              existingResponseIdSet.push(responseId);
-            }
-            await options.cache.set(`response-cache:${key}`, existingResponseIdSet);
+            const entryId = `${typename}.${id}`;
+            await options.cache.set(`response-cache:${entryId}:${responseId}`, {}, { ttl: ttl / 1000 });
+            await options.cache.set(`response-cache:${responseId}:${entryId}`, {}, { ttl: ttl / 1000 });
           })
         );
         return options.cache.set(`response-cache:${responseId}`, data, { ttl: ttl / 1000 });
       },
       async invalidate(entitiesToRemove) {
+        const responseIdsToCheck = new Set<string>();
         await Promise.all(
           [...entitiesToRemove].map(async ({ typename, id }) => {
-            const key = `${typename}.${id}`;
-            const existingResponseIdSet: string[] = (await options.cache.get(`response-cache:${key}`)) || [];
-            await options.cache.delete(`response-cache:${key}`);
+            const entryId = `${typename}.${id}`;
+            const cacheEntriesToDelete = await options.cache.getKeysByPrefix(`response-cache:${entryId}:`);
             await Promise.all(
-              existingResponseIdSet.map(responseId => options.cache.delete(`response-cache:${responseId}`))
+              cacheEntriesToDelete.map(cacheEntryName => {
+                const [, , responseId] = cacheEntryName.split(':');
+                responseIdsToCheck.add(responseId);
+                return options.cache.delete(entryId);
+              })
             );
+          })
+        );
+        await Promise.all(
+          [...responseIdsToCheck].map(async responseId => {
+            const cacheEntries = await options.cache.getKeysByPrefix(`response-cache:${responseId}:`);
+            if (cacheEntries.length === 0) {
+              await options.cache.delete(`response-cache:${responseId}`);
+            }
           })
         );
       },

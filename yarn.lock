@@ -2470,6 +2470,11 @@
     human-id "^1.0.2"
     prettier "^1.19.1"
 
+"@cloudflare/workers-types@^3.0.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-3.13.0.tgz#4483374809e328535ff136a73fb9c51fa3423e01"
+  integrity sha512-oyhzfYlWBLgd9odJ/WHcsD/8B+IaAjSD+OcPEGLzX5kGRONjwcW3NY0WQfsVIhQzZ6AbPzjwkmj4D2VFwU1xRQ==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"

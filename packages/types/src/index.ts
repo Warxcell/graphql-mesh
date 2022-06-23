@@ -32,6 +32,7 @@ export interface KeyValueCache<V = any> {
   get(key: string): Promise<V | undefined>;
   set(key: string, value: V, options?: KeyValueCacheSetOptions): Promise<void>;
   delete(key: string): Promise<boolean | void>;
+  getKeysByPrefix(prefix: string): Promise<string[]>;
 }
 
 export type GetMeshSourceOptions<THandlerConfig> = {
