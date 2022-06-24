@@ -1,0 +1,11 @@
+{
+  "name": "cloudflare-workers",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@graphql-mesh/cli": "0.73.3",
+    "@graphql-mesh/json-schema": "0.29.0",
+    "graphql": "16.0.1",
+    "wrangler": "2.0.15"
+  }
+}

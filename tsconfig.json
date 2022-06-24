@@ -40,9 +40,7 @@
       "@graphql-mesh/*": ["packages/handlers/*/src/index.ts"],
       "json-machete": ["packages/json-machete/src/index.ts"],
       "@omnigraph/*": ["packages/loaders/*/src/index.ts"]
-    },
-
-    "types": ["@cloudflare/workers-types"]
+    }
   },
   "include": ["./declarations.d.ts", "packages"],
   "exclude": ["**/node_modules", "**/dist"]

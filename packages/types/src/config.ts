@@ -1771,10 +1771,14 @@ export interface AdditionalSubscriptionObject {
  * Backend cache
  */
 export interface Cache {
+  cfwKv?: CFWorkersKVCacheConfig;
   file?: FileCacheConfig;
   localforage?: LocalforageConfig;
   redis?: RedisConfig;
   [k: string]: any;
+}
+export interface CFWorkersKVCacheConfig {
+  namespace?: string;
 }
 export interface FileCacheConfig {
   path?: string;

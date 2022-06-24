@@ -5,6 +5,9 @@
       "type": "object",
       "title": "Cache",
       "properties": {
+        "cfwKv": {
+          "$ref": "#/definitions/CFWorkersKVCacheConfig"
+        },
         "file": {
           "$ref": "#/definitions/FileCacheConfig"
         },
@@ -13,6 +16,16 @@
         },
         "redis": {
           "$ref": "#/definitions/RedisConfig"
+        }
+      }
+    },
+    "CFWorkersKVCacheConfig": {
+      "additionalProperties": false,
+      "type": "object",
+      "title": "CFWorkersKVCacheConfig",
+      "properties": {
+        "namespace": {
+          "type": "string"
         }
       }
     },

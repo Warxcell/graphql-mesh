@@ -14,6 +14,9 @@ sources:
 plugins:
   - responseCache:
       ttlPerCoordinate:
-        # Forecast data might change, so we can cache it for 1 hour only
-        - coordinate: Query.forecast_daily_by_lat_by_lon
+        - coordinate: Query.*
           ttl: 3600
+
+cache:
+  cfwKv:
+    namespace: MESH
