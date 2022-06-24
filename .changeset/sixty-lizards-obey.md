@@ -1,7 +1,7 @@
 ---
 "@graphql-mesh/cache-file": minor
 "@graphql-mesh/cache-redis": minor
-"@graphql-mesh/plugin-response-cache": minor
+"@graphql-mesh/plugin-response-cache": patch
 "@graphql-mesh/types": minor
 ---
 
