@@ -97,11 +97,13 @@ function getCacheForResponseCache(meshCache: KeyValueCache): Cache {
 export default function useMeshResponseCache(options: MeshPluginOptions<YamlConfig.ResponseCacheConfig>): Plugin {
   const ttlPerType: Record<string, number> = {};
   const ttlPerSchemaCoordinate: Record<string, number> = {};
-  for (const ttlConfig of options.ttlPerCoordinate) {
-    if (ttlConfig.coordinate.includes('.')) {
-      ttlPerSchemaCoordinate[ttlConfig.coordinate] = ttlConfig.ttl;
-    } else {
-      ttlPerType[ttlConfig.coordinate] = ttlConfig.ttl;
+  if (options.ttlPerCoordinate) {
+    for (const ttlConfig of options.ttlPerCoordinate) {
+      if (ttlConfig.coordinate.includes('.')) {
+        ttlPerSchemaCoordinate[ttlConfig.coordinate] = ttlConfig.ttl;
+      } else {
+        ttlPerType[ttlConfig.coordinate] = ttlConfig.ttl;
+      }
     }
   }
   return useResponseCache({
