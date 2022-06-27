@@ -578,6 +578,10 @@
         },
         "responseCache": {
           "$ref": "#/definitions/ResponseCacheConfig"
+        },
+        "rateLimit": {
+          "$ref": "#/definitions/RateLimitPluginConfig",
+          "description": "RateLimit plugin"
         }
       }
     },
@@ -2122,7 +2126,7 @@
         },
         "cacheKey": {
           "type": "string",
-          "description": "Customize the behavior how the response cache key is computed from the documentString, variableValues and sessionId.\nIf the given string is interpolated as empty, default behavior is used.\nExample;\n```yml\n# Cache by specific value\ncacheKey: \"{variableValues.userId}\"\n\n# Cache by documentString\ncacheKey: \"{documentString}\"\n\n# Cache by operationName\ncacheKey: \"{operationName}\"\n\n# Cache by some header value\ncacheKey: \"{context.headers.authorization}\"\n\n# Or combine two of each\ncacheKey: \"{context.headers.authorization}-{operationName}\"\n```"
+          "description": "Customize the behavior how the response cache key is computed from the documentString, variableValues, contextValue and sessionId.\nIf the given string is interpolated as empty, default behavior is used.\nExample;\n```yml\n# Cache by specific value\ncacheKey: \"{variableValues.userId}\"\n\n# Cache by documentString\ncacheKey: \"{documentString}\"\n\n# Cache by operationName\ncacheKey: \"{operationName}\"\n\n# Cache by some header value\ncacheKey: \"{contextValue.headers.authorization}\"\n\n# Or combine two of each\ncacheKey: \"{contextValue.headers.authorization}-{operationName}\"\n```"
         },
         "shouldCacheResult": {
           "type": "string",
@@ -3439,6 +3443,21 @@
           "description": "Path to the SQL Dump file if you want to build a in-memory database"
         }
       }
+    },
+    "RateLimitPluginConfig": {
+      "additionalProperties": false,
+      "type": "object",
+      "title": "RateLimitPluginConfig",
+      "properties": {
+        "config": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RateLimitTransformConfig"
+          },
+          "additionalItems": false
+        }
+      },
+      "required": ["config"]
     }
   },
   "title": "Config",

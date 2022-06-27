@@ -1809,6 +1809,7 @@ export interface Plugin {
   immediateIntrospection?: any;
   liveQuery?: LiveQueryConfig;
   responseCache?: ResponseCacheConfig;
+  rateLimit?: RateLimitPluginConfig;
   [k: string]: any;
 }
 export interface MaskedErrorsPluginConfig {
@@ -1869,7 +1870,7 @@ export interface ResponseCacheConfig {
    */
   if?: string;
   /**
-   * Customize the behavior how the response cache key is computed from the documentString, variableValues and sessionId.
+   * Customize the behavior how the response cache key is computed from the documentString, variableValues, contextValue and sessionId.
    * If the given string is interpolated as empty, default behavior is used.
    * Example;
    * ```yml
@@ -1883,10 +1884,10 @@ export interface ResponseCacheConfig {
    * cacheKey: "{operationName}"
    *
    * # Cache by some header value
-   * cacheKey: "{context.headers.authorization}"
+   * cacheKey: "{contextValue.headers.authorization}"
    *
    * # Or combine two of each
-   * cacheKey: "{context.headers.authorization}-{operationName}"
+   * cacheKey: "{contextValue.headers.authorization}-{operationName}"
    * ```
    */
   cacheKey?: string;
@@ -1901,4 +1902,10 @@ export interface ResponseCacheConfig {
 export interface ResponseCacheTTLConfig {
   coordinate: string;
   ttl: number;
+}
+/**
+ * RateLimit plugin
+ */
+export interface RateLimitPluginConfig {
+  config: RateLimitTransformConfig[];
 }
