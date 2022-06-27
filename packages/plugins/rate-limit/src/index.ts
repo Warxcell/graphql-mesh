@@ -3,17 +3,13 @@ import { MeshPluginOptions, YamlConfig } from '@graphql-mesh/types';
 import { Plugin } from '@envelop/core';
 import { process } from '@graphql-mesh/cross-helpers';
 import { createGraphQLError } from '@graphql-tools/utils';
+import minimatch from 'minimatch';
+import { ValidationContext, ValidationRule } from 'graphql';
 
 export default function useMeshRateLimit(options: MeshPluginOptions<YamlConfig.RateLimitPluginConfig>): Plugin {
-  const pathRateLimitDef = new Map<string, YamlConfig.RateLimitTransformConfig>();
   const tokenMap = new Map<string, number>();
   const timeouts = new Set<NodeJS.Timeout>();
 
-  if (options.config) {
-    options.config.forEach(config => {
-      pathRateLimitDef.set(`${config.type}.${config.field}`, config);
-    });
-  }
   if (options.pubsub) {
     const id = options.pubsub.subscribe('destroy', () => {
       options.pubsub.unsubscribe(id);
@@ -21,34 +17,34 @@ export default function useMeshRateLimit(options: MeshPluginOptions<YamlConfig.R
     });
   }
 
-  return {
-    onValidate(onValidateParams) {
-      onValidateParams.addValidationRule(validationContext => ({
-        Field: () => {
-          const parentType = validationContext.getParentType();
+  const validationRuleFactories: ((context: any) => ValidationRule)[] = options.config.map(config => {
+    const typeMatcher = new minimatch.Minimatch(config.type);
+    const fieldMatcher = new minimatch.Minimatch(config.field);
+    return (context: any) => (validationContext: ValidationContext) => ({
+      Field: () => {
+        const parentType = validationContext.getParentType();
+        if (typeMatcher.match(parentType.name)) {
           const fieldDef = validationContext.getFieldDef();
-          const path = `${parentType.name}.${fieldDef.name}`;
-          const rateLimitConfig = pathRateLimitDef.get(path);
-          if (rateLimitConfig) {
-            const identifier = stringInterpolator.parse(rateLimitConfig.identifier, {
+          if (fieldMatcher.match(fieldDef.name)) {
+            const identifier = stringInterpolator.parse(config.identifier, {
               env: process.env,
-              context: onValidateParams.context,
+              context,
             });
-            const mapKey = `${identifier}-${path}`;
+            const mapKey = `${identifier}-${parentType.name}.${fieldDef.name}`;
             let remainingTokens = tokenMap.get(mapKey);
 
             if (remainingTokens == null) {
-              remainingTokens = rateLimitConfig.max;
+              remainingTokens = config.max;
               const timeout = setTimeout(() => {
                 tokenMap.delete(mapKey);
                 timeouts.delete(timeout);
-              }, rateLimitConfig.ttl);
+              }, config.ttl);
               timeouts.add(timeout);
             }
 
             if (remainingTokens === 0) {
               validationContext.reportError(
-                createGraphQLError(`Rate limit of "${path}" exceeded for "${identifier}"`, {
+                createGraphQLError(`Rate limit of "${parentType.name}.${fieldDef.name}" exceeded for "${identifier}"`, {
                   path: [fieldDef.name],
                 })
               );
@@ -58,9 +54,18 @@ export default function useMeshRateLimit(options: MeshPluginOptions<YamlConfig.R
               tokenMap.set(mapKey, remainingTokens - 1);
             }
           }
-          return false;
-        },
-      }));
+        }
+        return false;
+      },
+    });
+  });
+
+  return {
+    onValidate(onValidateParams) {
+      validationRuleFactories.forEach(validationRuleFactory => {
+        const validationRule = validationRuleFactory(onValidateParams.context);
+        onValidateParams.addValidationRule(validationRule);
+      });
     },
   };
 }
