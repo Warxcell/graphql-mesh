@@ -1,8 +1,8 @@
 import { stringInterpolator } from '@graphql-mesh/string-interpolation';
 import { MeshPluginOptions, YamlConfig } from '@graphql-mesh/types';
 import { Plugin } from '@envelop/core';
-import { GraphQLError } from 'graphql';
 import { process } from '@graphql-mesh/cross-helpers';
+import { createGraphQLError } from '@graphql-tools/utils';
 
 export default function useMeshRateLimit(options: MeshPluginOptions<YamlConfig.RateLimitPluginConfig>): Plugin {
   const pathRateLimitDef = new Map<string, YamlConfig.RateLimitTransformConfig>();
@@ -47,7 +47,11 @@ export default function useMeshRateLimit(options: MeshPluginOptions<YamlConfig.R
             }
 
             if (remainingTokens === 0) {
-              validationContext.reportError(new GraphQLError(`Rate limit of "${path}" exceeded for "${identifier}"`));
+              validationContext.reportError(
+                createGraphQLError(`Rate limit of "${path}" exceeded for "${identifier}"`, {
+                  path: [fieldDef.name],
+                })
+              );
               // Remove this field from the selection set
               return null;
             } else {
