@@ -4,12 +4,12 @@ import { makeCloudflareWorkerKVEnv } from 'cloudflare-worker-mock';
 
 export default class CFWorkerKVCache implements KeyValueCache {
   private kvNamespace: KVNamespace;
-  constructor(config: { name: string }) {
-    this.kvNamespace = globalThis[config.name] ?? makeCloudflareWorkerKVEnv(config.name)[config.name];
+  constructor(config: { namespace: string }) {
+    this.kvNamespace = globalThis[config.namespace] ?? makeCloudflareWorkerKVEnv(config.namespace)[config.namespace];
   }
 
-  get(key: string): Promise<string | undefined> {
-    return this.kvNamespace.get(key);
+  get<T>(key: string): Promise<T | undefined> {
+    return this.kvNamespace.get(key, 'json');
   }
 
   async getKeysByPrefix(prefix: string): Promise<string[]> {
@@ -21,7 +21,7 @@ export default class CFWorkerKVCache implements KeyValueCache {
   }
 
   set(key: string, value: any, options?: { ttl?: number }): Promise<void> {
-    return this.kvNamespace.put(key, value, {
+    return this.kvNamespace.put(key, JSON.stringify(value), {
       expirationTtl: options?.ttl,
     });
   }

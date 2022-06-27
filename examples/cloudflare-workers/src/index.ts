@@ -1,20 +1,22 @@
 import { getBuiltMesh } from '../.mesh';
 import { createServer } from '@graphql-yoga/common';
 
-getBuiltMesh()
-  .then(({ plugins }) =>
-    createServer({
-      plugins,
-    }).start()
-  )
-  .catch(e => {
-    // In case of Mesh error
-    console.log(e);
-    addEventListener('fetch', (event: any) => {
-      event.respondWith(
-        new Response('Internal Server Error', {
-          status: 500,
-        })
-      );
+async function handleRequest(request: Request, event: any) {
+  try {
+    const mesh = await getBuiltMesh();
+    const server = createServer({
+      plugins: mesh.plugins,
+      maskedErrors: false,
     });
-  });
+    return server.handleRequest(request, event);
+  } catch (e) {
+    console.log(e);
+    return new Response(e.stack, {
+      status: 500,
+    });
+  }
+}
+
+self.addEventListener('fetch', (event: any) => {
+  event.respondWith(handleRequest(event.request, event));
+});

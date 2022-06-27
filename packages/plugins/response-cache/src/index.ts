@@ -58,14 +58,15 @@ function getCacheForResponseCache(meshCache: KeyValueCache): Cache {
       return meshCache.get(`response-cache:${responseId}`);
     },
     async set(responseId, data, entities, ttl) {
+      const ttlConfig = Number.isFinite(ttl) ? { ttl: ttl / 1000 } : undefined;
       await Promise.all(
         [...entities].map(async ({ typename, id }) => {
           const entryId = `${typename}.${id}`;
-          await meshCache.set(`response-cache:${entryId}:${responseId}`, {}, { ttl: ttl / 1000 });
-          await meshCache.set(`response-cache:${responseId}:${entryId}`, {}, { ttl: ttl / 1000 });
+          await meshCache.set(`response-cache:${entryId}:${responseId}`, {}, ttlConfig);
+          await meshCache.set(`response-cache:${responseId}:${entryId}`, {}, ttlConfig);
         })
       );
-      return meshCache.set(`response-cache:${responseId}`, data, { ttl: ttl / 1000 });
+      return meshCache.set(`response-cache:${responseId}`, data, ttlConfig);
     },
     async invalidate(entitiesToRemove) {
       const responseIdsToCheck = new Set<string>();
