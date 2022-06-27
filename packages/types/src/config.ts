@@ -1851,6 +1851,52 @@ export interface ResponseCacheConfig {
    * Include extension values that provide useful information, such as whether the cache was hit or which resources a mutation invalidated.
    */
   includeExtensionMetadata?: boolean;
+  /**
+   * Allows to cache responses based on the resolved session id.
+   * Return a unique value for each session.
+   * Creates a global session by default.
+   * Example;
+   * ```yml
+   * sessionId: "{context.headers.userId}"
+   * ```
+   */
+  sessionId?: string;
+  /**
+   * Specify whether the cache should be used based on the context.
+   * ```yml
+   * if: "context.headers.userId != null"
+   * ```
+   */
+  if?: string;
+  /**
+   * Customize the behavior how the response cache key is computed from the documentString, variableValues and sessionId.
+   * If the given string is interpolated as empty, default behavior is used.
+   * Example;
+   * ```yml
+   * # Cache by specific value
+   * cacheKey: "{variableValues.userId}"
+   *
+   * # Cache by documentString
+   * cacheKey: "{documentString}"
+   *
+   * # Cache by operationName
+   * cacheKey: "{operationName}"
+   *
+   * # Cache by some header value
+   * cacheKey: "{context.headers.authorization}"
+   *
+   * # Or combine two of each
+   * cacheKey: "{context.headers.authorization}-{operationName}"
+   * ```
+   */
+  cacheKey?: string;
+  /**
+   * Checks if the result should be cached.
+   * ```yml
+   * shouldCacheResult: "result.errors.length > 0"
+   * ```
+   */
+  shouldCacheResult?: string;
 }
 export interface ResponseCacheTTLConfig {
   coordinate: string;

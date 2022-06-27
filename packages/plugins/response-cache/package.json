@@ -22,14 +22,17 @@
   "repository": {
     "type": "git",
     "url": "Urigo/graphql-mesh",
-    "directory": "packages/plugins/live-query"
+    "directory": "packages/plugins/response-cache"
   },
   "peerDependencies": {
     "graphql": "*"
   },
   "dependencies": {
-    "@envelop/response-cache": "2.3.3",
+    "@envelop/response-cache": "3.0.0-alpha-868cc42.0",
     "@graphql-mesh/types": "0.76.0",
+    "@graphql-mesh/cross-helpers": "0.1.6",
+    "@graphql-mesh/string-interpolation": "0.3.0",
+    "@graphql-mesh/utils": "0.36.0",
     "@envelop/core": "^2.3.2",
     "tslib": "^2.4.0"
   },

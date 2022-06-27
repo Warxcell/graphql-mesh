@@ -2111,6 +2111,22 @@
         "includeExtensionMetadata": {
           "type": "boolean",
           "description": "Include extension values that provide useful information, such as whether the cache was hit or which resources a mutation invalidated."
+        },
+        "sessionId": {
+          "type": "string",
+          "description": "Allows to cache responses based on the resolved session id.\nReturn a unique value for each session.\nCreates a global session by default.\nExample;\n```yml\nsessionId: \"{context.headers.userId}\"\n```"
+        },
+        "if": {
+          "type": "string",
+          "description": "Specify whether the cache should be used based on the context.\n```yml\nif: \"context.headers.userId != null\"\n```"
+        },
+        "cacheKey": {
+          "type": "string",
+          "description": "Customize the behavior how the response cache key is computed from the documentString, variableValues and sessionId.\nIf the given string is interpolated as empty, default behavior is used.\nExample;\n```yml\n# Cache by specific value\ncacheKey: \"{variableValues.userId}\"\n\n# Cache by documentString\ncacheKey: \"{documentString}\"\n\n# Cache by operationName\ncacheKey: \"{operationName}\"\n\n# Cache by some header value\ncacheKey: \"{context.headers.authorization}\"\n\n# Or combine two of each\ncacheKey: \"{context.headers.authorization}-{operationName}\"\n```"
+        },
+        "shouldCacheResult": {
+          "type": "string",
+          "description": "Checks if the result should be cached.\n```yml\nshouldCacheResult: \"result.errors.length > 0\"\n```"
         }
       }
     },
