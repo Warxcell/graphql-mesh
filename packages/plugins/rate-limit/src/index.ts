@@ -4,68 +4,103 @@ import { Plugin } from '@envelop/core';
 import { process } from '@graphql-mesh/cross-helpers';
 import { createGraphQLError } from '@graphql-tools/utils';
 import minimatch from 'minimatch';
-import { ValidationContext, ValidationRule } from 'graphql';
+import { GraphQLError, TypeInfo, visit, visitInParallel, visitWithTypeInfo } from 'graphql';
+
+function deleteNode<T extends Record<string | number, any>>(
+  parent: T,
+  remaining: (string | number)[],
+  currentKey?: keyof T
+): void {
+  const nextKey = remaining.shift();
+  if (nextKey) {
+    const nextParent = currentKey ? parent[currentKey] : parent;
+    return deleteNode(nextParent, remaining, nextKey);
+  }
+  delete parent[currentKey];
+}
 
 export default function useMeshRateLimit(options: MeshPluginOptions<YamlConfig.RateLimitPluginConfig>): Plugin {
-  const tokenMap = new Map<string, number>();
-  const timeouts = new Set<NodeJS.Timeout>();
-
-  if (options.pubsub) {
-    const id = options.pubsub.subscribe('destroy', () => {
-      options.pubsub.unsubscribe(id);
-      timeouts.forEach(timeout => clearTimeout(timeout));
-    });
-  }
-
-  const validationRuleFactories: ((context: any) => ValidationRule)[] = options.config.map(config => {
-    const typeMatcher = new minimatch.Minimatch(config.type);
-    const fieldMatcher = new minimatch.Minimatch(config.field);
-    return (context: any) => (validationContext: ValidationContext) => ({
-      Field: () => {
-        const parentType = validationContext.getParentType();
-        if (typeMatcher.match(parentType.name)) {
-          const fieldDef = validationContext.getFieldDef();
-          if (fieldMatcher.match(fieldDef.name)) {
+  return {
+    async onExecute(onExecuteArgs) {
+      const typeInfo = new TypeInfo(onExecuteArgs.args.schema);
+      const errors: GraphQLError[] = [];
+      const jobs: Promise<void>[] = [];
+      let remainingFields = 0;
+      visit(
+        onExecuteArgs.args.document,
+        visitInParallel(
+          options.config.map(config => {
+            const typeMatcher = new minimatch.Minimatch(config.type);
+            const fieldMatcher = new minimatch.Minimatch(config.field);
             const identifier = stringInterpolator.parse(config.identifier, {
               env: process.env,
-              context,
+              root: onExecuteArgs.args.rootValue,
+              context: onExecuteArgs.args.contextValue,
             });
-            const mapKey = `${identifier}-${parentType.name}.${fieldDef.name}`;
-            let remainingTokens = tokenMap.get(mapKey);
+            return visitWithTypeInfo(typeInfo, {
+              Field: (fieldNode, key, parent, path) => {
+                const parentType = typeInfo.getParentType();
+                if (typeMatcher.match(parentType.name)) {
+                  const fieldDef = typeInfo.getFieldDef();
+                  if (fieldMatcher.match(fieldDef.name)) {
+                    const cacheKey = `rate-limit-${identifier}-${parentType.name}.${fieldDef.name}`;
+                    const remainingTokens$ = options.cache.get(cacheKey);
+                    jobs.push(
+                      remainingTokens$.then((remainingTokens: number): Promise<void> => {
+                        if (remainingTokens == null) {
+                          remainingTokens = config.max;
+                        }
 
-            if (remainingTokens == null) {
-              remainingTokens = config.max;
-              const timeout = setTimeout(() => {
-                tokenMap.delete(mapKey);
-                timeouts.delete(timeout);
-              }, config.ttl);
-              timeouts.add(timeout);
-            }
+                        if (remainingTokens === 0) {
+                          errors.push(
+                            createGraphQLError(
+                              `Rate limit of "${parentType.name}.${fieldDef.name}" exceeded for "${identifier}"`,
+                              {
+                                path: [fieldNode.alias?.value || fieldDef.name],
+                              }
+                            )
+                          );
+                          deleteNode(parent, [...path]);
+                          remainingFields--;
+                          return null;
+                        }
 
-            if (remainingTokens === 0) {
-              validationContext.reportError(
-                createGraphQLError(`Rate limit of "${parentType.name}.${fieldDef.name}" exceeded for "${identifier}"`, {
-                  path: [fieldDef.name],
-                })
-              );
-              // Remove this field from the selection set
-              return null;
-            } else {
-              tokenMap.set(mapKey, remainingTokens - 1);
-            }
-          }
+                        return options.cache.set(cacheKey, remainingTokens - 1, {
+                          ttl: config.ttl / 1000,
+                        });
+                      })
+                    );
+                  }
+                }
+                remainingFields++;
+                return false;
+              },
+            });
+          })
+        )
+      );
+      await Promise.all(jobs);
+      if (errors.length > 0) {
+        // If there is a field left in the final selection set
+        if (remainingFields > 0) {
+          // Add the errors to the final result
+          return {
+            onExecuteDone(onExecuteDoneArgs) {
+              onExecuteDoneArgs.setResult({
+                ...onExecuteDoneArgs.result,
+                errors,
+              });
+            },
+          };
         }
-        return false;
-      },
-    });
-  });
 
-  return {
-    onValidate(onValidateParams) {
-      validationRuleFactories.forEach(validationRuleFactory => {
-        const validationRule = validationRuleFactory(onValidateParams.context);
-        onValidateParams.addValidationRule(validationRule);
-      });
+        // If there is no need to continue the execution, stop
+        onExecuteArgs.setResultAndStopExecution({
+          data: null,
+          errors,
+        });
+      }
+      return undefined;
     },
   };
 }
