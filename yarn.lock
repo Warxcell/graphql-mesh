@@ -3189,6 +3189,13 @@
   dependencies:
     tslib "^2.4.0"
 
+"@graphql-tools/utils@8.8.0":
+  version "8.8.0"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.8.0.tgz#8332ff80a1da9204ccf514750dd6f5c5cccf17dc"
+  integrity sha512-KJrtx05uSM/cPYFdTnGAS1doL5bftJLAiFCDMZ8Vkifztz3BFn3gpFiy/o4wDtM8s39G46mxmt2Km/RmeltfGw==
+  dependencies:
+    tslib "^2.4.0"
+
 "@graphql-tools/wrap@6.1.0":
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/@graphql-tools/wrap/-/wrap-6.1.0.tgz#52451574dc667a423b66ad05720add03cbecb7b8"
@@ -6157,6 +6164,13 @@
   dependencies:
     "@typescript-eslint/types" "5.29.0"
     eslint-visitor-keys "^3.3.0"
+
+"@udacity/types-service-worker-mock@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@udacity/types-service-worker-mock/-/types-service-worker-mock-1.2.0.tgz#f047a26d036469f11b8f0f50d4c0901ae999bb93"
+  integrity sha512-VWvPhE8U9Xi/QVq1E0UphfVjzZtNV7kDSKiJ9AXnrBO291BLHV2/alUh99xDO6BoG66L5ETx5k/ZSRUaRopv+w==
+  dependencies:
+    service-worker-mock "^2.0.5"
 
 "@ungap/global-this@^0.4.2":
   version "0.4.4"

@@ -1808,8 +1808,8 @@ export interface Plugin {
   maskedErrors?: MaskedErrorsPluginConfig;
   immediateIntrospection?: any;
   liveQuery?: LiveQueryConfig;
-  responseCache?: ResponseCacheConfig;
   rateLimit?: RateLimitPluginConfig;
+  responseCache?: ResponseCacheConfig;
   [k: string]: any;
 }
 export interface MaskedErrorsPluginConfig {
@@ -1824,6 +1824,12 @@ export interface LiveQueryConfig {
 export interface LiveQueryInvalidation {
   field: string;
   invalidate: string[];
+}
+/**
+ * RateLimit plugin
+ */
+export interface RateLimitPluginConfig {
+  config: RateLimitTransformConfig[];
 }
 export interface ResponseCacheConfig {
   /**
@@ -1902,10 +1908,4 @@ export interface ResponseCacheConfig {
 export interface ResponseCacheTTLConfig {
   coordinate: string;
   ttl: number;
-}
-/**
- * RateLimit plugin
- */
-export interface RateLimitPluginConfig {
-  config: RateLimitTransformConfig[];
 }

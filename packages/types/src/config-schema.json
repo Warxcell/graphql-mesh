@@ -576,12 +576,12 @@
         "liveQuery": {
           "$ref": "#/definitions/LiveQueryConfig"
         },
-        "responseCache": {
-          "$ref": "#/definitions/ResponseCacheConfig"
-        },
         "rateLimit": {
           "$ref": "#/definitions/RateLimitPluginConfig",
           "description": "RateLimit plugin"
+        },
+        "responseCache": {
+          "$ref": "#/definitions/ResponseCacheConfig"
         }
       }
     },
@@ -2075,6 +2075,21 @@
       },
       "required": ["field", "invalidate"]
     },
+    "RateLimitPluginConfig": {
+      "additionalProperties": false,
+      "type": "object",
+      "title": "RateLimitPluginConfig",
+      "properties": {
+        "config": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RateLimitTransformConfig"
+          },
+          "additionalItems": false
+        }
+      },
+      "required": ["config"]
+    },
     "ResponseCacheConfig": {
       "additionalProperties": false,
       "type": "object",
@@ -3443,21 +3458,6 @@
           "description": "Path to the SQL Dump file if you want to build a in-memory database"
         }
       }
-    },
-    "RateLimitPluginConfig": {
-      "additionalProperties": false,
-      "type": "object",
-      "title": "RateLimitPluginConfig",
-      "properties": {
-        "config": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/RateLimitTransformConfig"
-          },
-          "additionalItems": false
-        }
-      },
-      "required": ["config"]
     }
   },
   "title": "Config",

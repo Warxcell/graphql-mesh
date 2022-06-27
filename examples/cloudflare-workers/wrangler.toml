@@ -1,0 +1,6 @@
+main = "src/index.ts"
+compatibility_date = "2022-06-27"
+node_compat = true
+
+[vars]
+DEBUG = "1"
